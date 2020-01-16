@@ -1,7 +1,9 @@
-FROM php:7.3-fpm-alpine3.10 AS php_modules_stage
+FROM php:7.4-fpm-alpine3.11 AS php_modules_stage
 LABEL maintainer="pod@cro-co.co.jp"
 
 ENV LANG="ja_JP.UTF-8" LANGUAGE="ja_JP:ja" LC_ALL="ja_JP.UTF-8"
+ENV REDIS_VER="5.1.1"
+ENV PHALCON_VER="4.0.2"
 
 WORKDIR /tmp
 
@@ -13,48 +15,23 @@ RUN set -x \
     && apk add libwebp-dev jpeg-dev libpng-dev libxpm-dev freetype-dev bzip2-dev openldap-dev libzip-dev libxslt-dev gettext-dev libmcrypt-dev \
     && docker-php-ext-configure gd --with-webp-dir=/usr/include --with-jpeg-dir=/usr/include --with-xpm-dir=/usr/include --with-freetype-dir=/usr/include --with-png-dir=/usr/include \
     && docker-php-source extract \
-    && curl -L -o /tmp/redis.tar.gz https://codeload.github.com/phpredis/phpredis/tar.gz/4.3.0 \
+    && curl -L -o /tmp/redis.tar.gz https://codeload.github.com/phpredis/phpredis/tar.gz/${REDIS_VER}\
     && tar xfz /tmp/redis.tar.gz -C /tmp \
     && rm -r /tmp/redis.tar.gz \
-    && mv /tmp/phpredis-4.3.0 /usr/src/php/ext/redis \
+    && mv /tmp/phpredis-${REDIS_VER} /usr/src/php/ext/redis \
     && docker-php-ext-install opcache bcmath pdo_mysql calendar exif sockets gd bz2 ldap zip xsl gettext redis \
     && yes '' | pecl install -f xdebug igbinary msgpack mcrypt apcu_bc apcu_bc \
     && docker-php-ext-enable xdebug igbinary msgpack mcrypt apc apcu \
     && mv /usr/local/etc/php/conf.d/docker-php-ext-apc.ini /usr/local/etc/php/conf.d/zz-docker-php-ext-apc.ini
 
 RUN set -x \
-    && curl -s https://codeload.github.com/phalcon/cphalcon/tar.gz/v3.4.5 -o - > cphalcon-3.4.5.tar.gz \
-    && tar xzf cphalcon-3.4.5.tar.gz \
-    && cd cphalcon-3.4.5/build \
+    && curl -s https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VER} -o - > cphalcon-${PHALCON_VER}.tar.gz \
+    && tar xzf cphalcon-${PHALCON_VER}.tar.gz \
+    && cd cphalcon-${PHALCON_VER}/build \
     && ./install \
     && docker-php-ext-enable phalcon
 
-RUN set -x \
-    && cd /tmp \
-    && git clone https://github.com/awslabs/aws-elasticache-cluster-client-libmemcached.git \
-    && cd aws-elasticache-cluster-client-libmemcached \
-    && touch configure.ac aclocal.m4 configure Makefile.am Makefile.in \
-    && sed -i "s#static char \*\*environ= NULL;#char **environ= NULL;#" libtest/cmdline.cc \
-    && mkdir BUILD \
-    && cd BUILD \
-    && ../configure --prefix=/tmp/libmemcached --with-pic --disable-sasl \
-    && mkdir /tmp/libmemcached \
-    && make \
-    && make install \
-    && cd /tmp \
-    && git clone https://github.com/awslabs/aws-elasticache-cluster-client-memcached-for-php.git \
-    && cd aws-elasticache-cluster-client-memcached-for-php \
-    && git checkout php7 \
-    && phpize \
-    && ./configure --with-libmemcached-dir=/tmp/libmemcached --enable-memcached-igbinary --enable-memcached-json --enable-memcached-msgpack --disable-memcached-sasl \
-    && sed -i "s#-lmemcached#/tmp/libmemcached/lib/libmemcached.a#" Makefile \
-    && sed -i "s#-lmemcachedutil#/tmp/libmemcached/lib/libmemcachedutil.a -lcrypt -lpthread -lm -lstdc++#" Makefile \
-    && make \
-    && make install \
-    && docker-php-ext-enable memcached \
-    && mv /usr/local/etc/php/conf.d/docker-php-ext-memcached.ini /usr/local/etc/php/conf.d/zz-docker-php-ext-memcached.ini
-
-FROM php:7.3-cli-alpine3.10
+FROM php:7.4-cli-alpine3.11
 ENV LANG="ja_JP.UTF-8" LANGUAGE="ja_JP:ja" LC_ALL="ja_JP.UTF-8"
 COPY --from=php_modules_stage /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
 COPY --from=php_modules_stage /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
