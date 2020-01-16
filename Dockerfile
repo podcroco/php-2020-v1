@@ -12,7 +12,12 @@ RUN set -x \
     && apk add autoconf m4 dpkg-dev dpkg file g++ gcc binutils libatomic libc-dev musl-dev make re2c git-perl perl-git perl-error perl libmagic mpc1 mpfr3 isl gmp \
     && apk add libwebp-dev jpeg-dev libpng-dev libxpm-dev freetype-dev bzip2-dev openldap-dev libzip-dev libxslt-dev gettext-dev libmcrypt-dev \
     && docker-php-ext-configure gd --with-webp-dir=/usr/include --with-jpeg-dir=/usr/include --with-xpm-dir=/usr/include --with-freetype-dir=/usr/include --with-png-dir=/usr/include \
-    && docker-php-ext-install opcache bcmath pdo_mysql calendar exif sockets gd bz2 ldap zip xsl gettext \
+    && docker-php-source extract \
+    && curl -L -o /tmp/redis.tar.gz https://codeload.github.com/phpredis/phpredis/tar.gz/5.1.1 \
+    && tar xfz /tmp/redis.tar.gz -C /tmp \
+    && rm -r /tmp/redis.tar.gz \
+    && mv /tmp/phpredis-5.1.1 /usr/src/php/ext/redis \
+    && docker-php-ext-install opcache bcmath pdo_mysql calendar exif sockets gd bz2 ldap zip xsl gettext redis \
     && yes '' | pecl install -f xdebug igbinary msgpack mcrypt apcu_bc apcu_bc \
     && docker-php-ext-enable xdebug igbinary msgpack mcrypt apc apcu \
     && mv /usr/local/etc/php/conf.d/docker-php-ext-apc.ini /usr/local/etc/php/conf.d/zz-docker-php-ext-apc.ini
