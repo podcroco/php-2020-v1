@@ -11,11 +11,11 @@ RUN set -x \
     && apk update \
     && apk add tzdata && cat /usr/share/zoneinfo/Asia/Tokyo > /etc/localtime \
     && apk add curl git bash \
-    && apk add autoconf m4 dpkg-dev dpkg file g++ gcc binutils libatomic libc-dev musl-dev make re2c git-perl perl-git perl-error perl libmagic mpc1 mpfr3 isl gmp \
+    && apk add autoconf m4 dpkg-dev dpkg file g++ gcc binutils libatomic libc-dev musl-dev make re2c git-perl perl-git perl-error perl libmagic mpc1 isl gmp \
     && apk add libwebp-dev jpeg-dev libpng-dev libxpm-dev freetype-dev bzip2-dev openldap-dev libzip-dev libxslt-dev gettext-dev libmcrypt-dev \
-    && docker-php-ext-configure gd --with-webp-dir=/usr/include --with-jpeg-dir=/usr/include --with-xpm-dir=/usr/include --with-freetype-dir=/usr/include --with-png-dir=/usr/include \
+    && docker-php-ext-configure gd --with-webp --with-jpeg --with-xpm --with-freetype \
     && docker-php-source extract \
-    && curl -L -o /tmp/redis.tar.gz https://codeload.github.com/phpredis/phpredis/tar.gz/${REDIS_VER}\
+    && curl -L -o /tmp/redis.tar.gz https://codeload.github.com/phpredis/phpredis/tar.gz/${REDIS_VER} \
     && tar xfz /tmp/redis.tar.gz -C /tmp \
     && rm -r /tmp/redis.tar.gz \
     && mv /tmp/phpredis-${REDIS_VER} /usr/src/php/ext/redis \
