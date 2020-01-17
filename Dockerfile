@@ -20,8 +20,8 @@ RUN set -x \
     && rm -r /tmp/redis.tar.gz \
     && mv /tmp/phpredis-${REDIS_VER} /usr/src/php/ext/redis \
     && docker-php-ext-install opcache bcmath pdo_mysql calendar exif sockets gd bz2 ldap zip xsl gettext redis \
-    && yes '' | pecl install -f xdebug igbinary msgpack mcrypt apcu_bc apcu_bc \
-    && docker-php-ext-enable xdebug igbinary msgpack mcrypt apc apcu \
+    && yes '' | pecl install -f xdebug igbinary msgpack mcrypt apcu_bc apcu_bc psr \
+    && docker-php-ext-enable xdebug igbinary msgpack mcrypt apc apcu psr \
     && mv /usr/local/etc/php/conf.d/docker-php-ext-apc.ini /usr/local/etc/php/conf.d/zz-docker-php-ext-apc.ini
 
 RUN set -x \
@@ -35,7 +35,7 @@ FROM php:7.4-cli-alpine3.11
 ENV LANG="ja_JP.UTF-8" LANGUAGE="ja_JP:ja" LC_ALL="ja_JP.UTF-8"
 COPY --from=php_modules_stage /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
 COPY --from=php_modules_stage /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
-COPY --from=php_modules_stage /usr/local/lib/php/extensions/no-debug-non-zts-20180731 /usr/local/lib/php/extensions/no-debug-non-zts-20180731
+COPY --from=php_modules_stage /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 RUN set -x \
     && apk --no-cache add tzdata && cat /usr/share/zoneinfo/Asia/Tokyo > /etc/localtime \
     && apk --no-cache add libbz2 libldap libmcrypt libxslt libzip libstdc++ libxpm libpng libjpeg libwebp freetype libintl \
