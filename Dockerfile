@@ -1,9 +1,9 @@
-FROM php:7.4-fpm-alpine3.11 AS php_modules_stage
+FROM php:7.4-fpm-alpine3.14 AS php_modules_stage
 LABEL maintainer="pod@cro-co.co.jp"
 
 ENV LANG="ja_JP.UTF-8" LANGUAGE="ja_JP:ja" LC_ALL="ja_JP.UTF-8"
-ENV REDIS_VER="5.1.1"
-ENV PHALCON_VER="4.0.2"
+ENV REDIS_VER="5.3.4"
+ENV PHALCON_VER="4.1.2"
 
 WORKDIR /tmp
 
@@ -31,7 +31,7 @@ RUN set -x \
     && ./install \
     && docker-php-ext-enable phalcon
 
-FROM php:7.4-cli-alpine3.11
+FROM php:7.4-fpm-alpine3.14
 ENV LANG="ja_JP.UTF-8" LANGUAGE="ja_JP:ja" LC_ALL="ja_JP.UTF-8"
 COPY --from=php_modules_stage /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
 COPY --from=php_modules_stage /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
